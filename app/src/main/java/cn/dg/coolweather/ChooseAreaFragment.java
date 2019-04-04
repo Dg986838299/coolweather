@@ -1,6 +1,7 @@
 package cn.dg.coolweather;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,6 +26,7 @@ import java.util.List;
 import cn.dg.coolweather.db.City;
 import cn.dg.coolweather.db.County;
 import cn.dg.coolweather.db.Province;
+import cn.dg.coolweather.gson.Weather;
 import cn.dg.coolweather.util.HttpUtil;
 import cn.dg.coolweather.util.Utility;
 import okhttp3.Call;
@@ -84,6 +86,22 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(position);
                     queryCounties();
+                }else if (currentLevel == LEVEL_COUNTY){
+                    String weatherId = countyList.get(position).getWeatherId();
+                    //instanceof 可以用来判断一个对象是否属于某一类的实例
+                    if (getActivity() instanceof MainActivity){
+                        //启动WeatherActivity 并把当前选中县的天气id传递过去
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }else if (getActivity() instanceof WeatherActivity){
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
+
                 }
             }
         });

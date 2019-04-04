@@ -3,6 +3,7 @@ package cn.dg.coolweather.util;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 
 import org.json.JSONArray;
@@ -11,6 +12,7 @@ import org.json.JSONObject;
 import cn.dg.coolweather.db.City;
 import cn.dg.coolweather.db.County;
 import cn.dg.coolweather.db.Province;
+import cn.dg.coolweather.gson.Weather;
 
 import static android.content.ContentValues.TAG;
 
@@ -24,8 +26,6 @@ public class Utility {
                 JSONArray allProvinces = new JSONArray(response);
                 for (int i = 0; i < allProvinces.length(); i++) {
                     JSONObject provinceObject = allProvinces.getJSONObject(i);
-                    // TODO: 2019/4/3  输出一下provinceObject
-                    Log.d(TAG, "provinceObject: " + provinceObject);
                     Province province = new Province();
                     province.setProvinceName(provinceObject.getString("name"));
                     province.setProvinceCode(provinceObject.getInt("id"));
@@ -83,5 +83,31 @@ public class Utility {
             }
         }
         return false;
+    }
+    /*
+    * 将返回的JSON数据解析成Weather实体类
+    * */
+    public static Weather handleWeatherResponse(String response){
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            //通过JSONObject和JSONArray将天气数据中的主体内容解析出来
+            /*
+             {
+            "status": "ok",
+            "basic": {},
+            "aqi": {},
+            "now": {},
+            "suggestion": {},
+            "daily_forecast": []
+            }
+            * */
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
+            String weatherContent = jsonArray.getJSONObject(0).toString();
+            //之前定义过相应的GSON实体类 只需要通过调用fromJson()方法就能直接将JSON数据转换成Weather对象了
+            return new Gson().fromJson(weatherContent, Weather.class);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 }
